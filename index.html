@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекінг ТН Nova Poshta</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { margin-bottom: 8px; color: #333; }
+        .subtitle { color: #888; margin-bottom: 20px; font-size: 14px; }
+        .input-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: monospace;
+            resize: vertical;
+            min-height: 100px;
+        }
+        textarea:focus { outline: none; border-color: #ffcc00; }
+        .hint { font-size: 12px; color: #888; margin-top: 6px; }
+        .options {
+            margin-top: 12px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .options label { margin: 0; display: flex; align-items: center; gap: 6px; }
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #fff;
+        }
+        button {
+            margin-top: 16px;
+            padding: 12px 32px;
+            background: #ffcc00;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:hover { background: #ffb800; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .status { margin-top: 10px; font-size: 13px; }
+        .status.error { color: #e74c3c; }
+        .status.success { color: #27ae60; }
+        .status.warning { color: #f39c12; }
+
+        table {
+            width: 100%;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-collapse: collapse;
+        }
+        th {
+            background: #333;
+            color: #fff;
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+            word-break: break-word;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: #fafafa; }
+        tr:nth-child(even) { background: #fafafa; }
+        tr:nth-child(even):hover { background: #f0f0f0; }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-delivered { background: #d4edda; color: #155724; }
+        .badge-transit { background: #cce5ff; color: #004085; }
+        .badge-handover { background: #fff3cd; color: #856404; }
+        .badge-cancelled { background: #f8d7da; color: #721c24; }
+        .badge-default { background: #e9ecef; color: #495057; }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .history-toggle {
+            background: none;
+            border: none;
+            color: #0070f3;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0;
+            text-decoration: underline;
+        }
+        .history-toggle:hover { color: #0058c7; }
+
+        .history-panel {
+            display: none;
+            background: #f9f9f9;
+            padding: 10px 14px;
+            font-size: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .history-panel.open { display: block; }
+        .history-panel .history-item {
+            padding: 4px 0;
+            border-bottom: 1px dotted #ddd;
+        }
+        .history-panel .history-item:last-child { border-bottom: none; }
+        .history-panel .history-date { color: #888; margin-right: 8px; }
+
+        .warning-section {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            margin: 0;
+            padding: 8px 16px;
+            font-size: 13px;
+            background: #fff;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .toolbar button:hover {
+            background: #f0f0f0;
+            border-color: #0070f3;
+        }
+        .toolbar button:active {
+            background: #0070f3;
+            color: #fff;
+        }
+        .toolbar .copied {
+            background: #27ae60 !important;
+            color: #fff !important;
+            border-color: #27ae60 !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>📦 Трекінг ТН Nova Poshta</h1>
+    <p class="subtitle">Введіть номери накладних для відстеження</p>
+
+    <div class="input-section">
+        <label for="documentNumbers">Номери накладних (по одному на рядок):</label>
+        <textarea id="documentNumbers" placeholder="5900XXXXXXXXX1&#10;5900XXXXXXXXX2"></textarea>
+        <div class="hint">Або вставьте JSON масив: ["5900XXXXXXXXX1", "5900XXXXXXXXX2"]</div>
+
+        <div class="options">
+            <label>
+                Мова:
+                <select id="language">
+                    <option value="UK" selected>🇺🇦 Українська</option>
+                    <option value="EN">🇬🇧 English</option>
+                    <option value="RU">🇷🇺 Русский</option>
+                </select>
+            </label>
+            <label>
+                <input type="checkbox" id="expandHistory" checked> Показати історію
+            </label>
+        </div>
+
+        <button id="submitBtn" onclick="submitData()">Отримати статус</button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <div id="warningContainer"></div>
+    <div id="toolbar" class="toolbar" style="display:none;"></div>
+    <div id="tableContainer"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        const API_URL = 'https://api.novaposhta.ua/v2.0/json/';
+
+        async function submitData() {
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('status');
+            const container = document.getElementById('tableContainer');
+            const warningContainer = document.getElementById('warningContainer');
+            const lang = document.getElementById('language').value;
+
+            const raw = document.getElementById('documentNumbers').value.trim();
+
+            // Парсинг
+            let documentNumbers;
+            try {
+                const parsed = JSON.parse(raw);
+                documentNumbers = Array.isArray(parsed) ? parsed : [parsed];
+            } catch {
+                documentNumbers = raw.split('\n')
+                    .map(v => v.trim())
+                    .filter(v => v.length > 0);
+            }
+
+            if (documentNumbers.length === 0) {
+                status.textContent = '⚠️ Введіть хоча б один номер накладної';
+                status.className = 'status error';
+                return;
+            }
+
+            if (documentNumbers.length > 50) {
+                status.textContent = '⚠️ Максимум 50 накладних за запит';
+                status.className = 'status error';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Завантаження...';
+            status.textContent = '';
+            status.className = 'status';
+            warningContainer.innerHTML = '';
+            container.innerHTML = '';
+
+            try {
+                const requestBody = {
+                    "modelName": "TrackingDocument",
+                    "calledMethod": "getStatusDocuments",
+                    "methodProperties": {
+                        "Documents": documentNumbers.map(num => ({ DocumentNumber: num })),
+                        "Language": lang
+                    },
+                    "system": "Tracking"
+                };
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('Nova Poshta API Response:', data);
+
+                // ⚠️ errors — масив, пустий [] — це OK! Перевіряємо length!
+                if (data.errors && data.errors.length > 0) {
+                    status.textContent = `❌ Помилки API: ${data.errors.join('; ')}`;
+                    status.className = 'status error';
+                    return;
+                }
+
+                // ⚠️ warnings — показуємо окремим блоком
+                if (data.warnings && data.warnings.length > 0) {
+                    const warningMessages = data.warnings.map(w => {
+                        const id = Object.keys(w)[0];
+                        return `${id}: ${w[id]}`;
+                    });
+                    warningContainer.innerHTML = `
+                        <div class="warning-section">
+                            ⚠️ <strong>Увага:</strong> ${warningMessages.join('<br>')}
+                        </div>`;
+                }
+
+                const documents = data.data || [];
+
+                if (documents.length === 0) {
+                    container.innerHTML = '<div class="no-results">📭 Не знайдено жодної накладної</div>';
+                    status.textContent = 'ℹ️ Результатів немає';
+                    status.className = 'status';
+                    return;
+                }
+
+                renderTable(documents);
+                renderToolbar(documents);
+                status.textContent = `✅ Завантажено ${documents.length} накладних`;
+                status.className = 'status success';
+
+            } catch (error) {
+                console.error('Error:', error);
+                let msg = `❌ Помилка: ${error.message}`;
+                if (error.message.includes('Failed to fetch')) {
+                    msg += '\n💡 Перевірте з\'єднання або CORS';
+                }
+                status.textContent = msg;
+                status.className = 'status error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Отримати статус';
+            }
+        }
+
+        function renderToolbar(documents) {
+            const toolbar = document.getElementById('toolbar');
+            toolbar.style.display = 'flex';
+            toolbar.innerHTML = `
+                <button onclick="copyToClipboard()" id="btnCopy">📋 Копіювати</button>
+                <button onclick="exportCSV()">📊 Експорт CSV</button>
+                <button onclick="exportXLSX()">📗 Експорт Excel (.xlsx)</button>
+                <button onclick="exportJSON()">📄 Експорт JSON</button>
+                <button onclick="exportHTML()">🌐 Експорт HTML</button>
+            `;
+        }
+
+        const labels = {
+            Number: '№ ТН',
+            Status: 'Статус',
+            StatusCode: 'Код',
+            CitySender: 'Відправник',
+            CityRecipient: 'Отримувач',
+            WarehouseSender: 'Відділення вих.',
+            WarehouseRecipient: 'Відділення вкр.',
+            DocumentWeight: 'Вага, кг',
+            DocumentCost: 'Вартість, ₴',
+            DateCreated: 'Створено',
+            TrackingUpdateDate: 'Оновлення'
+        };
+
+        function getTableData() {
+            const keys = ['Number', 'Status', 'StatusCode', 'CitySender', 'CityRecipient', 
+                          'WarehouseSender', 'WarehouseRecipient', 'DocumentWeight', 
+                          'DocumentCost', 'DateCreated', 'TrackingUpdateDate'];
+            return {
+                headers: keys.filter(k => window._documents && window._documents.length > 0 && window._documents[0][k] !== undefined),
+                data: window._documents || []
+            };
+        }
+
+        function copyToClipboard() {
+            const { headers, data } = getTableData();
+            const tsv = [headers.join('\t'), ...data.map(row => headers.map(h => row[h] ?? '').join('\t'))].join('\n');
+            navigator.clipboard.writeText(tsv).then(() => {
+                const btn = document.getElementById('btnCopy');
+                btn.textContent = '✅ Скопійовано!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 Копіювати';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function exportCSV() {
+            const { headers, data } = getTableData();
+            const csv = [
+                headers.join(','),
+                ...data.map(row => headers.map(h => {
+                    const val = String(row[h] ?? '');
+                    return val.includes(',') ? `"${val}"` : val;
+                }).join(','))
+            ].join('\n');
+            downloadFile(csv, 'novaposhta_tracking.csv', 'text/csv');
+        }
+
+        function exportXLSX() {
+            const { headers, data } = getTableData();
+
+            // Формуємо масив масивів для SheetJS
+            const wsData = [
+                headers.map(h => labels[h] || h),  // заголовки
+                ...data.map(row => headers.map(h => row[h] ?? ''))
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // Ширина колонок
+            ws['!cols'] = headers.map(h => {
+                const len = Math.max(String(h).length, ...data.map(r => String(r[h] ?? '').length));
+                return { wch: Math.min(len + 2, 40) };  // max 40 chars
+            });
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Трекінг');
+            XLSX.writeFile(wb, 'novaposhta_tracking.xlsx');
+        }
+
+        function exportJSON() {
+            const { data } = getTableData();
+            const json = JSON.stringify(data, null, 2);
+            downloadFile(json, 'novaposhta_tracking.json', 'application/json');
+        }
+
+        function exportHTML() {
+            const tableHTML = document.getElementById('tableContainer').querySelector('table').outerHTML;
+            const fullHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Трекінг ТН</title><style>body{font-family:sans-serif;padding:20px;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:8px;text-align:left;}th{background:#333;color:#fff;}</style></head><body><h1>📦 Трекінг ТН Nova Poshta</h1>${tableHTML}</body></html>`;
+            downloadFile(fullHTML, 'novaposhta_tracking.html', 'text/html');
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function renderTable(documents) {
+            const container = document.getElementById('tableContainer');
+
+            // Поля з реальних даних API
+            const keys = ['Number', 'Status', 'StatusCode', 'CitySender', 'CityRecipient', 
+                          'WarehouseSender', 'WarehouseRecipient', 'DocumentWeight', 
+                          'DocumentCost', 'DateCreated', 'TrackingUpdateDate'];
+            window._documents = documents;
+            const visibleKeys = keys.filter(k => documents.some(d => d[k] !== undefined));
+
+            let html = '<table><thead><tr>';
+            visibleKeys.forEach(key => {
+                html += `<th>${labels[key] || key}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            documents.forEach(doc => {
+                html += '<tr>';
+                visibleKeys.forEach(key => {
+                    let value = doc[key] ?? '';
+
+                    if (key === 'Status') {
+                        const badgeClass = getStatusClass(value);
+                        value = `<span class="badge ${badgeClass}">${value}</span>`;
+                    }
+
+                    html += `<td>${value}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function getStatusClass(status) {
+            if (!status) return 'badge-default';
+            const s = status.toLowerCase();
+            if (s.includes('достав') || s.includes('delivered')) return 'badge-delivered';
+            if (s.includes('транзит') || s.includes('transit')) return 'badge-transit';
+            if (s.includes('переда') || s.includes('handover')) return 'badge-handover';
+            if (s.includes('відмов') || s.includes('cancel')) return 'badge-cancelled';
+            return 'badge-default';
+        }
+    </script>
+</body>
+</html>
